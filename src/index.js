@@ -2,40 +2,24 @@ import Hapi from 'hapi';
 import vision from 'vision';
 import inert from 'inert';
 import lout from 'lout';
-import Joi from 'joi';
+import { add } from './db';
+
+import rates from './endpoints/rates/{base}/{quote}/index';
 
 const server = new Hapi.Server();
 server.connection({ port: 3001, host: 'localhost' });
 
-
 server.register([vision, inert, { register: lout }], (err) => console.log(err));
 
-server.route({
-  method: 'GET',
-  path: '/convert/{from}/{to}',
-  config: {
-    handler(request, reply) {
-      reply({ a: 'b' });
-    },
-    validate: {
-      params: {
-        from: Joi.string().required(),
-        to: Joi.string().required(),
-      },
-    },
-    response: {
-      status: {
-        200: Joi.object({
-          a: Joi.string().required().example('abc'),
-        }),
-      },
-    },
-  },
-});
+const dependencies = {
+  addStats: add('db.json'),
+};
+
+server.route(
+  [rates].map((f) => typeof f === 'function' ? rates(dependencies) : rates)
+);
 
 server.start((err) => {
-  if (err) {
-    throw err;
-  }
+  if (err) throw err;
   console.log(`Server running at: ${server.info.uri}`);
 });
