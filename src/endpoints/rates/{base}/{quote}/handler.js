@@ -7,28 +7,48 @@ export default function handler({ addStats }) {
     const quote = request.params.quote.toUpperCase();
     const { amount } = request.query;
 
+    const isBaseUsd = base === 'USD';
+    const isBaseQuoteSame = base === quote;
+
     fetch(`https://api.fixer.io/latest?base=${base}&symbols=USD,${quote}`)
       .then((data) => data.json())
       .then((data) => {
-        const valid = Joi.validate(data, {
+        if (data.error === 'Invalid base') {
+          reply({
+            error: 'Invalid base',
+          }).code(422);
+          return;
+        }
+
+        const { error, value } = Joi.validate(data, {
           base: Joi.any().valid(base).required(),
           date: Joi.date().required(),
           rates: Joi.object({
-            USD: base === 'USD'
+            USD: isBaseUsd
                   ? Joi.any().forbidden() : Joi.number().required(),
-            [quote]: base === quote
+            [quote]: isBaseQuoteSame
                   ? Joi.any().forbidden() : Joi.number().required(),
           }).required(),
         });
 
-        if (valid.error) throw valid.error;
-        return valid.value;
-      })
-      .then((data) => {
-        const { rates = {} } = data;
-        const quoteRate = base === quote ? 1 : rates[quote];
+        if (error) {
+          if (error.details[0].path === `rates.${quote}`) {
+            reply({
+              error: 'Invalid quote',
+            }).code(422);
+            return;
+          }
+
+          reply({
+            error: error.message,
+          }).code(502);
+          return;
+        }
+
+        const { rates = {} } = value;
+        const quoteRate = isBaseQuoteSame ? 1 : rates[quote];
         addStats({
-          usdAmount: base === 'USD' ? amount : rates.USD * amount,
+          usdAmount: isBaseUsd ? amount : rates.USD * amount,
           quote,
         });
         reply({
@@ -36,8 +56,8 @@ export default function handler({ addStats }) {
           quote,
           unit: quoteRate,
           total: quoteRate * amount,
-        });
+        }).code(200);
       })
-      .catch((error) => console.log(error));
+      .catch(console.error);
   };
 }

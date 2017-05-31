@@ -7,16 +7,27 @@ import { add } from './db';
 import rates from './endpoints/rates/{base}/{quote}/index';
 
 const server = new Hapi.Server();
-server.connection({ port: 3001, host: 'localhost' });
+server.connection({
+  port: 3001,
+  host: 'localhost',
+  routes: {
+    cors: true,
+  },
+});
 
-server.register([vision, inert, { register: lout }], (err) => console.log(err));
+server.register([
+  vision,
+  inert,
+  { register: lout },
+], (err) => err ? console.error(err) : null);
 
 const dependencies = {
   addStats: add('db.json'),
 };
-
 server.route(
-  [rates].map((f) => typeof f === 'function' ? rates(dependencies) : rates)
+  [
+    rates,
+  ].map((f) => typeof f === 'function' ? rates(dependencies) : rates)
 );
 
 server.start((err) => {
