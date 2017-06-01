@@ -7,8 +7,10 @@
   "author": "Filip Pyrek <PyrekFilip@gmail.com>",
   "license": "GPLv3",
   "scripts": {
-    "start": "nodemon --watch src --exec 'yarn build && node build/index.js'",
-    "build": "babel src -d build",
+    "start": "nodemon --watch src --exec 'yarn build && NODE_ENV=development node build/index.js'",
+    "start:prod": "NODE_ENV=production node build/index.js",
+    "build": "yarn build:clean && babel src -d build",
+    "build:clean": "rm -rf ./build",
     "lint": "eslint src"
   },
   "babel": {
