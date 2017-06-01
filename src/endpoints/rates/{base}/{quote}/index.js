@@ -1,5 +1,6 @@
 import Joi from 'joi';
 import handler from './handler';
+import { statsSchema } from '../../../../db';
 
 export default function createEndpoint({ addStats }) {
   return {
@@ -43,7 +44,7 @@ export default function createEndpoint({ addStats }) {
             quote: Joi.string().regex(/^[a-zA-Z]{3}$/).example('CZK'),
             unit: Joi.number().positive().example(23.547),
             total: Joi.number().positive().example(353.205),
-            stats: Joi.object(),
+            stats: Joi.object(statsSchema),
           }),
           400: Joi.object({
             error: Joi.string().example('Invalid base'),

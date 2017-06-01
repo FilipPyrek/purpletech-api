@@ -1,10 +1,19 @@
 import fs from 'fs-extra';
 import Joi from 'joi';
 
-const statsSchema = {
-  totalUsdConverted: Joi.number().min(0).default(0),
-  counter: Joi.number().min(0).default(0),
-  popularity: Joi.object().default({}),
+export const statsSchema = {
+  totalUsdConverted: Joi.number().min(0).default(0)
+                         .description('Total amount of converted money ' +
+                                      'expressed in dollars'),
+  counter: Joi.number().min(0).default(0).description('Count of successful ' +
+                                                      'conversions'),
+  popularity: Joi.object().default({}).example({
+    USD: 15,
+    CZK: 18,
+    EUR: 78,
+  }).description('Object\'s key is currency code and value is number of ' +
+                 'conversion requests made for this currency as quote ' +
+                 '(destination) currency'),
 };
 
 const load = (filename) =>
