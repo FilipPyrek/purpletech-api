@@ -10,3 +10,6 @@ API for this client - [https://github.com/FilipPyrek/purpletech-api](https://git
 
 - Devlopment - `yarn start`
 - Production - `yarn build && yarn start:prod`
+
+## API docs
+API docs are generated via `lout`, so they can be found on the server endpoint `/docs`
