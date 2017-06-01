@@ -50,13 +50,16 @@ export default function handler({ addStats }) {
         addStats({
           usdAmount: isBaseUsd ? amount : rates.USD * amount,
           quote,
+        })
+        .then((stats) => {
+          reply({
+            base,
+            quote,
+            unit: quoteRate,
+            total: quoteRate * amount,
+            stats,
+          }).code(200);
         });
-        reply({
-          base,
-          quote,
-          unit: quoteRate,
-          total: quoteRate * amount,
-        }).code(200);
       })
       .catch(console.error);
   };

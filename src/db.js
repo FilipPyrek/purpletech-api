@@ -2,8 +2,9 @@ import fs from 'fs-extra';
 import Joi from 'joi';
 
 const statsSchema = {
-  usdAmount: Joi.number().min(0).default(0),
-  scoore: Joi.object().default({}),
+  totalUsdConverted: Joi.number().min(0).default(0),
+  counter: Joi.number().min(0).default(0),
+  popularity: Joi.object().default({}),
 };
 
 const load = (filename) =>
@@ -20,19 +21,21 @@ const load = (filename) =>
        return valid.value;
      });
 
-const save = (filename) => (stats) => fs.writeJson(filename, stats);
+const save = (filename) => (stats) =>
+                fs.writeJson(filename, stats).then(() => stats);
 
 export function add(filename) {
   return ({ usdAmount, quote }) =>
     load(filename)
       .then((data) => ({
-        usdAmount: data.usdAmount + usdAmount,
-        scoore: {
-          ...data.scoore,
+        counter: data.counter + 1,
+        totalUsdConverted: data.totalUsdConverted + usdAmount,
+        popularity: {
+          ...data.popularity,
           [quote]:
-            (typeof data.scoore[quote] === 'undefined'
+            (typeof data.popularity[quote] === 'undefined'
               ? 0
-              : data.scoore[quote]
+              : data.popularity[quote]
             ) + 1,
         },
       }))

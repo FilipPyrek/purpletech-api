@@ -10,13 +10,6 @@ export default function createEndpoint({ addStats }) {
       description: 'Endpoint for converting currencies.',
       validate: {
         failAction(request, reply, source, error) {
-          if (!error.isJoi) {
-            reply({
-              error: 'Unknown error',
-            }).code(500);
-            return;
-          }
-
           const { message } = error.output.payload;
           const { keys } = error.output.payload.validation;
           const invalidKeyName = keys[0];
@@ -25,7 +18,11 @@ export default function createEndpoint({ addStats }) {
               error: `Invalid ${invalidKeyName}`,
               message,
             }).code(400);
+            return;
           }
+          reply({
+            error: 'Unknown error',
+          }).code(500);
         },
         query: {
           amount: Joi.number()
@@ -46,6 +43,7 @@ export default function createEndpoint({ addStats }) {
             quote: Joi.string().regex(/^[a-zA-Z]{3}$/).example('CZK'),
             unit: Joi.number().positive().example(23.547),
             total: Joi.number().positive().example(353.205),
+            stats: Joi.object(),
           }),
           400: Joi.object({
             error: Joi.string().example('Invalid base'),
