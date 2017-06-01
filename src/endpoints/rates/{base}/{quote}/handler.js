@@ -61,6 +61,11 @@ export default function handler({ addStats }) {
           }).code(200);
         });
       })
-      .catch(console.error);
+      .catch((error) => {
+        if (process.env.NODE_ENV === 'development') console.error(error);
+        reply({
+          error: 'Unknown error',
+        }).code(500);
+      });
   };
 }
